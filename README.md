@@ -19,18 +19,18 @@ This library is licensed under the MIT-0 License. See the LICENSE file.
 =======
 # Step Functions Testing with TestState API
 
-This project demonstrates comprehensive testing of AWS Step Functions using the **TestState API** with a fluent testing framework. It showcases advanced testing patterns for complex Step Functions workflows including Map states, Parallel states, Choice states, retry mechanisms, and error handling.
+This sample demonstrates comprehensive testing of AWS Step Functions using the **TestState API** with a fluent testing framework. It showcases advanced testing patterns for complex Step Functions workflows including Map states, Parallel states, Choice states, retry mechanisms, and error handling.
 
-## 🏗️ Project Overview
+## 🏗️ Overview
 
-This project provides a complete example of:
+This sample provides a complete example of:
 - **AWS Step Functions TestState API** usage for unit testing state machines
 - **Fluent API testing patterns** with method chaining
 - **Comprehensive test coverage** for all Step Functions state types
 - **CI/CD pipeline** with GitHub Actions
 - **SAM deployment** for serverless applications
 
-## 📁 Project Structure
+## 📁 Sample Structure
 
 ```
 sample-stepfunctions-testing-with-testStateAPI/
@@ -66,7 +66,7 @@ sample-stepfunctions-testing-with-testStateAPI/
 ### 1. Environment Setup
 
 ```bash
-# Clone or navigate to the project directory
+# Clone or navigate to the sample directory
 cd sample-stepfunctions-testing-with-testStateAPI
 
 # Create and activate virtual environment
@@ -119,7 +119,7 @@ pytest tests/unit_test.py -k "jsonata" -v
 
 ### Fluent API Testing Pattern
 
-This project uses a **fluent API pattern** for building and executing Step Functions tests:
+This sample uses a **fluent API pattern** for building and executing Step Functions tests:
 
 ```python
 def test_example(runner):
@@ -235,7 +235,7 @@ sam delete
 
 ## 🚀 CI/CD Pipeline
 
-The project includes a complete GitHub Actions workflow (`.github/workflows/test-and-deploy.yml`) that:
+The sample includes a complete GitHub Actions workflow (`.github/workflows/test-and-deploy.yml`) that:
 
 1. **Unit Tests**: Runs comprehensive test suite
 2. **Test Stack Deployment**: Deploys temporary stack for integration testing
