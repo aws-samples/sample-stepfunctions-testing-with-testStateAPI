@@ -1,0 +1,347 @@
+{
+    "Comment": "Simple order processing workflow with Map, Parallel, and waitForTaskToken",
+    "QueryLanguage": "JSONata",
+    "StartAt": "ValidateOrder",
+    "States": {
+        "ValidateOrder": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Arguments": {
+                "FunctionName": "ValidateOrderFunction",
+                "Payload": "{% $states.input %}"
+            },
+            "Output": "{% $merge([$states.input, {'validationResult': $states.result}]) %}",
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 3,
+                    "BackoffRate": 2
+                }
+            ],
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "Next": "ValidationFailed",
+                    "Output": "{% $merge([$states.input, {'error': $states.errorOutput}]) %}"
+                }
+            ],
+            "Next": "CheckValidation"
+        },
+        "CheckValidation": {
+            "Type": "Choice",
+            "Choices": [
+                {
+                    "Condition": "{% $states.input.validationResult.isValid = true %}",
+                    "Next": "ProcessOrderItems"
+                }
+            ],
+            "Default": "ValidationFailed"
+        },
+        "ProcessOrderItems": {
+            "Type": "Map",
+            "ItemProcessor": {
+                "ProcessorConfig": {
+                    "Mode": "DISTRIBUTED",
+                    "ExecutionType": "STANDARD"
+                },
+                "StartAt": "ProcessItem",
+                "States": {
+                    "ProcessItem": {
+                        "Type": "Task",
+                        "Resource": "arn:aws:states:::lambda:invoke",
+                        "Arguments": {
+                            "FunctionName": "ProcessItemFunction",
+                            "Payload": "{% $states.input %}"
+                        },
+                        "Retry": [
+                            {
+                                "ErrorEquals": [
+                                    "Lambda.TooManyRequestsException"
+                                ],
+                                "IntervalSeconds": 2,
+                                "MaxAttempts": 3,
+                                "BackoffRate": 2
+                            }
+                        ],
+                        "Catch": [
+                            {
+                                "ErrorEquals": [
+                                    "States.ALL"
+                                ],
+                                "Output": "{% $merge([$states.input, {'error': $states.errorOutput}]) %}",
+                                "Next": "ItemProcessingFailed"
+                            }
+                        ],
+                        "End": true
+                    },
+                    "ItemProcessingFailed": {
+                        "Type": "Fail",
+                        "Error": "ItemProcessingError",
+                        "Cause": "Failed to process individual item"
+                    }
+                }
+            },
+            "Items": "{% $states.input.orderItems %}",
+            "MaxConcurrency": 10,
+            "ToleratedFailureCount": 2,
+            "Output": "{% $merge([$states.input, {'processedItems': $states.result}]) %}",
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "States.ItemReaderFailed",
+                        "States.ResultWriterFailed"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 2,
+                    "BackoffRate": 2
+                }
+            ],
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "Next": "ValidationFailed",
+                    "Output": "{% $merge([$states.input, {'error': $states.errorOutput}]) %}"
+                }
+            ],
+            "Next": "ParallelProcessing"
+        },
+        "ParallelProcessing": {
+            "Type": "Parallel",
+            "Branches": [
+                {
+                    "StartAt": "ProcessPayment",
+                    "States": {
+                        "ProcessPayment": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::lambda:invoke",
+                            "Arguments": {
+                                "FunctionName": "ProcessPaymentFunction",
+                                "Payload": "{% $states.input %}"
+                            },
+                            "Retry": [
+                                {
+                                    "ErrorEquals": [
+                                        "Lambda.TooManyRequestsException"
+                                    ],
+                                    "IntervalSeconds": 2,
+                                    "MaxAttempts": 3,
+                                    "BackoffRate": 2
+                                }
+                            ],
+                            "Catch": [
+                                {
+                                    "ErrorEquals": [
+                                        "States.ALL"
+                                    ],
+                                    "Output": "{% $merge([$states.input, {'error': $states.errorOutput}]) %}",
+                                    "Next": "PaymentFailed"
+                                }
+                            ],
+                            "End": true
+                        },
+                        "PaymentFailed": {
+                            "Type": "Fail",
+                            "Error": "PaymentProcessingError",
+                            "Cause": "Failed to process payment"
+                        }
+                    }
+                },
+                {
+                    "StartAt": "UpdateInventory",
+                    "States": {
+                        "UpdateInventory": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::lambda:invoke",
+                            "Arguments": {
+                                "FunctionName": "UpdateInventoryFunction",
+                                "Payload": "{% $states.input %}"
+                            },
+                            "Retry": [
+                                {
+                                    "ErrorEquals": [
+                                        "Lambda.TooManyRequestsException"
+                                    ],
+                                    "IntervalSeconds": 2,
+                                    "MaxAttempts": 3,
+                                    "BackoffRate": 2
+                                }
+                            ],
+                            "Catch": [
+                                {
+                                    "ErrorEquals": [
+                                        "States.ALL"
+                                    ],
+                                    "Output": "{% $merge([$states.input, {'error': $states.errorOutput}]) %}",
+                                    "Next": "InventoryFailed"
+                                }
+                            ],
+                            "End": true
+                        },
+                        "InventoryFailed": {
+                            "Type": "Fail",
+                            "Error": "InventoryUpdateError",
+                            "Cause": "Failed to update inventory"
+                        }
+                    }
+                }
+            ],
+            "Output": "{% $merge([$states.input, {'parallelResults': $states.result}]) %}",
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "States.BranchFailed"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 2,
+                    "BackoffRate": 2
+                }
+            ],
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "Next": "OrderRejected",
+                    "Output": "{% $merge([$states.input, {'error': $states.errorOutput}]) %}"
+                }
+            ],
+            "Next": "WaitForApproval"
+        },
+        "WaitForApproval": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+            "Arguments": {
+                "FunctionName": "RequestApprovalFunction",
+                "Payload": {
+                    "orderId": "{% $states.input.orderId %}",
+                    "amount": "{% $states.input.amount %}",
+                    "taskToken": "{% $states.context.Task.Token %}"
+                }
+            },
+            "Output": "{% $merge([$states.input, {'approvalResult': $states.result}]) %}",
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 3,
+                    "BackoffRate": 2
+                }
+            ],
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "Next": "OrderRejected",
+                    "Output": "{% $merge([$states.input, {'error': $states.errorOutput}]) %}"
+                }
+            ],
+            "Next": "CheckApproval"
+        },
+        "CheckApproval": {
+            "Type": "Choice",
+            "Choices": [
+                {
+                    "Condition": "{% $states.input.approvalResult.approved = true %}",
+                    "Next": "SaveOrderDetails"
+                }
+            ],
+            "Default": "OrderRejected"
+        },
+        "SaveOrderDetails": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::dynamodb:putItem",
+            "Arguments": {
+                "TableName": "Orders",
+                "Item": {
+                    "orderId": {
+                        "S": "{% $states.input.orderId %}"
+                    },
+                    "amount": {
+                        "N": "{% $string($states.input.amount) %}"
+                    },
+                    "status": {
+                        "S": "COMPLETED"
+                    },
+                    "processedAt": {
+                        "S": "{% $states.context.State.EnteredTime %}"
+                    }
+                }
+            },
+            "Output": "{% $merge([$states.input, {'saveResult': $states.result}]) %}",
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "DynamoDB.ProvisionedThroughputExceededException",
+                        "DynamoDB.ThrottlingException"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 3,
+                    "BackoffRate": 2
+                }
+            ],
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "Next": "OrderRejected",
+                    "Output": "{% $merge([$states.input, {'error': $states.errorOutput}]) %}"
+                }
+            ],
+            "Next": "SendNotification"
+        },
+        "SendNotification": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Arguments": {
+                "FunctionName": "SendNotificationFunction",
+                "Payload": "{% $states.input %}"
+            },
+            "Output": "{% $merge([$states.input, {'notificationResult': $states.result}]) %}",
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 3,
+                    "BackoffRate": 2
+                }
+            ],
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "Next": "OrderProcessed",
+                    "Output": "{% $merge([$states.input, {'notificationError': $states.errorOutput}]) %}"
+                }
+            ],
+            "Next": "OrderProcessed"
+        },
+        "OrderProcessed": {
+            "Type": "Succeed",
+            "Output": "{% $states.input.orderId %}"
+        },
+        "ValidationFailed": {
+            "Type": "Fail",
+            "Error": "ValidationError",
+            "Cause": "Order validation failed"
+        },
+        "OrderRejected": {
+            "Type": "Fail",
+            "Error": "ApprovalError",
+            "Cause": "Order was rejected during approval process"
+        }
+    }
+}

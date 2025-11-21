@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Simple Step Functions Testing Demo
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: python3.11
+    MemorySize: 128
+
+Resources:
+  # Lambda Functions
+  ValidateOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/validate_order/
+      Handler: app.lambda_handler
+      Description: Validates incoming orders
+
+  ProcessPaymentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/process_payment/
+      Handler: app.lambda_handler
+      Description: Processes payment for orders
+
+  # Step Functions State Machine
+  OrderProcessingStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      DefinitionUri: statemachine/simple_order_processing.asl.json
+      DefinitionSubstitutions:
+        ValidateOrderFunctionArn: !GetAtt ValidateOrderFunction.Arn
+        ProcessPaymentFunctionArn: !GetAtt ProcessPaymentFunction.Arn
+      Policies:
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ValidateOrderFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ProcessPaymentFunction
+
+Outputs:
+  StateMachineArn:
+    Description: "Step Functions State Machine ARN"
+    Value: !Ref OrderProcessingStateMachine
+    
+  ValidateOrderFunctionArn:
+    Description: "Validate Order Lambda Function ARN"
+    Value: !GetAtt ValidateOrderFunction.Arn
+    
+  ProcessPaymentFunctionArn:
+    Description: "Process Payment Lambda Function ARN"
+    Value: !GetAtt ProcessPaymentFunction.Arn
