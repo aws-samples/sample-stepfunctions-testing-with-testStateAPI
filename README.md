@@ -232,6 +232,16 @@ pytest tests/unit_test.py -v --tb=short -x
 pytest tests/unit_test.py::TestOrderProcessingStateMachine::test_lambda_throttling_retry_mechanism -v -s
 ```
 
+#### Network Isolated Testing with LocalStack
+For completely local testing without requiring AWS connectivity, you can use [LocalStack](https://docs.localstack.cloud/aws/services/stepfunctions/) to emulate AWS services locally. This enables testing in network-isolated environments and can speed up development cycles.
+
+To use LocalStack for Step Functions testing:
+1. Configure your test environment to use LocalStack endpoints
+2. Modify the `conftest.py` to point to LocalStack's Step Functions service
+3. Run tests against the local Step Functions emulation
+
+For more information on enhancing local testing with LocalStack, see the AWS blog post: [Enhance the Local Testing Experience for Serverless Applications with LocalStack](https://aws.amazon.com/blogs/compute/enhance-the-local-testing-experience-for-serverless-applications-with-localstack/).
+
 ### SAM Local Development
 ```bash
 # Build the SAM application
@@ -258,9 +268,12 @@ The sample includes a simple GitHub Actions workflow (`.github/workflows/test-an
 - **Pull Requests** to `main` branch
 
 ### Required Secrets
-Configure these in your GitHub repository settings:
+Configure these AWS credentials in your GitHub repository settings to enable the GitHub Actions workflow to deploy resources to your AWS account. For detailed setup instructions, see the AWS blog post: [Using GitHub Actions to Deploy Serverless Applications](https://aws.amazon.com/blogs/compute/using-github-actions-to-deploy-serverless-applications/).
+
+Required secrets:
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
+- `AWS_REGION`
 
 ## 📊 Test Coverage
 
