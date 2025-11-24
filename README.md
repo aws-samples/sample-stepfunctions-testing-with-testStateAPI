@@ -19,7 +19,7 @@ This library is licensed under the MIT-0 License. See the LICENSE file.
 =======
 # Step Functions Testing with TestState API
 
-This sample demonstrates comprehensive testing of AWS Step Functions using the **TestState API** with a fluent testing framework. It showcases advanced testing patterns for complex Step Functions workflows including Map states, Parallel states, Choice states, retry mechanisms, and error handling.
+This sample demonstrates comprehensive testing of AWS Step Functions using the **TestState API** with a fluent testing framework. It showcases advanced testing patterns for complex Step Functions workflows including Map states, Parallel states, Choice states, integration patterns such as .waitForTaskToken, retry mechanisms, and error handling.
 
 ## 🏗️ Overview
 
@@ -109,9 +109,6 @@ aws stepfunctions list-state-machines --region us-east-1
 ```bash
 # Run the complete test suite
 pytest tests/unit_test.py -v
-
-# Run with coverage report
-pytest tests/unit_test.py -v --cov=src --cov-report=html
 ```
 
 #### Run Specific Test Categories
@@ -155,7 +152,7 @@ def test_example(runner):
 #### 1. **State Type Coverage**
 - ✅ **Task States** (Lambda, DynamoDB, SNS)
 - ✅ **Choice States** (conditional branching)
-- ✅ **Map States** (parallel processing with tolerance)
+- ✅ **Map States** (Distributed Map with ToleradtedFailureThreshold)
 - ✅ **Parallel States** (concurrent execution)
 - ✅ **Wait States** (including waitForTaskToken)
 - ✅ **Pass/Succeed/Fail States**
@@ -249,13 +246,12 @@ sam delete
 
 ## 🚀 CI/CD Pipeline
 
-The sample includes a complete GitHub Actions workflow (`.github/workflows/test-and-deploy.yml`) that:
+The sample includes a simple GitHub Actions workflow (`.github/workflows/test-and-deploy.yml`) that demonstrates basic CI/CD:
 
-1. **Unit Tests**: Runs comprehensive test suite
-2. **Test Stack Deployment**: Deploys temporary stack for integration testing
-3. **Integration Tests**: Validates deployed resources
-4. **Production Deployment**: Deploys to production on main branch
-5. **Cleanup**: Removes test resources
+1. **Unit Tests**: Runs the test suite locally using `pytest tests/unit_test.py`
+2. **SAM Deploy**: Deploys resources to AWS using `sam build` and `sam deploy`
+
+**Note**: In a production scenario, you would typically extend this pipeline to include additional stages such as deploying to a development account first, performing integration testing against deployed resources, and then promoting to a production account with proper approval gates.
 
 ### Pipeline Triggers
 - **Push** to `main` or `develop` branches
