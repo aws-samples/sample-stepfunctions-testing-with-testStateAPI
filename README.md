@@ -30,6 +30,20 @@ This sample provides a complete example of:
 - **CI/CD pipeline** with GitHub Actions
 - **SAM deployment** for serverless applications
 
+## 🔄 Step Functions Workflow
+
+The sample demonstrates testing of a complete order processing workflow:
+
+![Step Functions Workflow Diagram](stepfunctions_workflow_diagram.png)
+
+This workflow includes:
+- **Order Validation**: Validates incoming order data
+- **Choice Logic**: Routes based on validation results
+- **Map State**: Processes multiple items with error tolerance
+- **Parallel Processing**: Handles payment and inventory concurrently
+- **Error Handling**: Comprehensive retry and catch mechanisms
+- **Notifications**: Success and failure notification paths
+
 ## 📁 Sample Structure
 
 ```
