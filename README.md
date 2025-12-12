@@ -1,22 +1,3 @@
-<<<<<<< HEAD
-## My Project
-
-TODO: Fill this README out!
-
-Be sure to:
-
-* Change the title in this README
-* Edit your repository description on GitHub
-
-## Security
-
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
-
-## License
-
-This library is licensed under the MIT-0 License. See the LICENSE file.
-
-=======
 # Step Functions Testing with TestState API
 
 This sample demonstrates comprehensive testing of AWS Step Functions using the **TestState API** with a fluent testing framework. It showcases advanced testing patterns for complex Step Functions workflows including Map states, Parallel states, Choice states, integration patterns such as .waitForTaskToken, retry mechanisms, and error handling.
@@ -293,4 +274,3 @@ The test suite provides comprehensive coverage:
 - [Step Functions Developer Guide](https://docs.aws.amazon.com/step-functions/latest/dg/)
 - [SAM Developer Guide](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/)
 - [JSONata Documentation](https://jsonata.org/)
->>>>>>> ee5bc0b (Initial commit: Step Functions testing with TestState API)
