@@ -228,7 +228,7 @@ def sfn_client():
 
 For more information on enhancing local testing with LocalStack, see the AWS blog post: [Enhance the Local Testing Experience for Serverless Applications with LocalStack](https://aws.amazon.com/blogs/compute/enhance-the-local-testing-experience-for-serverless-applications-with-localstack/).
 
-Note:- Please note that at the time of publishing this sample, LocalStack may not yet have support for specific features with enahnced TestState API.
+Note:- Please note that at the time of publishing this sample, LocalStack might not  support specific features with enahnced TestState API.
 
 ### SAM Local Development
 ```bash
