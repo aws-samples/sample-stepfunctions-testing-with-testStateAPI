@@ -217,11 +217,17 @@ pytest tests/unit_test.py::TestOrderProcessingStateMachine::test_lambda_throttli
 For completely local testing without requiring AWS connectivity, you can use [LocalStack](https://docs.localstack.cloud/aws/services/stepfunctions/) to emulate AWS services locally. This enables testing in network-isolated environments and can speed up development cycles.
 
 To use LocalStack for Step Functions testing:
-1. Configure your test environment to use LocalStack endpoints
-2. Modify the `conftest.py` to point to LocalStack's Step Functions service
+1. Configure LocalStack in your machine and [start LocalStack](https://docs.localstack.cloud/aws/getting-started/installation/) and ensure that localstack is running
+2. Modify the `conftest.py` to point to LocalStack endpoint as below:
+
+def sfn_client():
+    """Step Functions client for TestState API calls"""
+    return boto3.client('stepfunctions', region_name='us-east-1',endpoint_url='http://localhost.localstack.cloud:4566')
+
 3. Run tests against the local Step Functions emulation
 
 For more information on enhancing local testing with LocalStack, see the AWS blog post: [Enhance the Local Testing Experience for Serverless Applications with LocalStack](https://aws.amazon.com/blogs/compute/enhance-the-local-testing-experience-for-serverless-applications-with-localstack/).
+Note:- Please note that at the time of publishing this sample, LocalStack may not yet have support for specific features with enahnced TestState API.
 
 ### SAM Local Development
 ```bash
