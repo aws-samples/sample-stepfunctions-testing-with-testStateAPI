@@ -219,11 +219,11 @@ For completely local testing without requiring AWS connectivity, you can use [Lo
 To use LocalStack for Step Functions testing:
 1. Configure LocalStack in your machine and [start LocalStack](https://docs.localstack.cloud/aws/getting-started/installation/) and ensure that localstack is running
 2. Modify the `conftest.py` to point to LocalStack endpoint as below:
-
+```
 def sfn_client():
     """Step Functions client for TestState API calls"""
     return boto3.client('stepfunctions', region_name='us-east-1',endpoint_url='http://localhost.localstack.cloud:4566')
-
+```
 3. Run tests against the local Step Functions emulation
 
 For more information on enhancing local testing with LocalStack, see the AWS blog post: [Enhance the Local Testing Experience for Serverless Applications with LocalStack](https://aws.amazon.com/blogs/compute/enhance-the-local-testing-experience-for-serverless-applications-with-localstack/).
