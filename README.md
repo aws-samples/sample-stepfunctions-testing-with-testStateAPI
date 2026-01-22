@@ -204,7 +204,7 @@ pytest tests/unit_test.py -k "jsonata" -v
 
 ## 🔧 Development Workflow
 
-### Local Testing
+### Unit Testing
 ```bash
 # Run tests in watch mode during development
 pytest tests/unit_test.py -v --tb=short -x
@@ -213,8 +213,8 @@ pytest tests/unit_test.py -v --tb=short -x
 pytest tests/unit_test.py::TestOrderProcessingStateMachine::test_lambda_throttling_retry_mechanism -v -s
 ```
 
-#### Network Isolated Testing with LocalStack
-For completely local testing without requiring AWS connectivity, you can use [LocalStack](https://docs.localstack.cloud/aws/services/stepfunctions/) to emulate AWS services locally. This enables testing in network-isolated environments and can speed up development cycles.
+#### Unit Testing in Isolated Environment
+You may need to unit test your Step Functions workflows in isolated environments, in situations where there is no network connectivity, or for other development and testing requirements. We've partnered with [LocalStack](https://docs.localstack.cloud/aws/services/stepfunctions/)  to support the Enhanced TestState API capabilities in their emulated environment. 
 
 To use LocalStack for Step Functions testing:
 1. Configure LocalStack in your machine and [start LocalStack](https://docs.localstack.cloud/aws/getting-started/installation/) and ensure that localstack is running
@@ -228,7 +228,7 @@ def sfn_client():
 
 For more information on enhancing local testing with LocalStack, see the AWS blog post: [Enhance the Local Testing Experience for Serverless Applications with LocalStack](https://aws.amazon.com/blogs/compute/enhance-the-local-testing-experience-for-serverless-applications-with-localstack/).
 
-Note:- Please note that at the time of publishing this sample, LocalStack might not  support specific features with enahnced TestState API.
+Note:- As LocalStack continues to expand support for Enhanced TestState API features, some capabilities such as Parallel state testing may not yet be available in their emulated environment at the time of publishing. Check LocalStack's latest documentation for current feature support.
 
 ### SAM Local Development
 ```bash
